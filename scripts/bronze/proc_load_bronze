@@ -1,1 +1,44 @@
+    CREATE OR ALTER PROCEDURE bronze.load_bronze AS
+    BEGIN
+        DECLARE @start_time DATETIME, @end_time DATETIME, @batch_start_time DATETIME, @batch_end_time DATETIME
+	    BEGIN TRY
+		    SET @batch_start_time = GETDATE();
+            PRINT '============================================================';
+            PRINT 'Loading Bronze Layer';
+            PRINT '============================================================';
 
+            PRINT '------------------------------------------------------------';
+            PRINT 'Loading Sibanye Tables';
+            PRINT '------------------------------------------------------------';
+
+            PRINT '>> Truncating Table bronze.sibanye_doc'
+            TRUNCATE TABLE bronze.sibanye_doc;
+
+          --  PRINT '>> Inserting Data Into: Table bronze.sibanye_doc'
+            BULK INSERT bronze.sibanye_doc
+            FROM 'C:\Users\sbu_2\Documents\dwh_project\datasets\source_erp\c.csv'
+            WITH (
+                FIELDTERMINATOR = ',',
+                ROWTERMINATOR = '\n',
+                FIRSTROW = 2
+            );
+    		        SET @end_time = GETDATE();
+	        PRINT '>> Load Duration: ' + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS NVARCHAR) + 'seconds';
+	        PRINT '---------------------------------'
+
+	        SET @batch_end_time = GETDATE();
+	        PRINT '=================================='
+	        PRINT 'Loading Bronze Layer';
+	        PRINT '  - Total loading Duration: ' + CAST(DATEDIFF(SECOND, @batch_start_time, @batch_end_time) AS NVARCHAR) + 'seconds';
+	        PRINT '=================================='
+
+	    END TRY
+	    BEGIN CATCH
+		    PRINT '==================================='
+		    PRINT 'Error Occured During Loading bronze Layer'
+		    PRINT 'Error Massage' + ERROR_MESSAGE();
+		    PRINT 'Error Massage' + CAST(ERROR_NUMBER() AS NVARCHAR);
+		    PRINT 'Error Massage' + CAST(ERROR_STATE() AS NVARCHAR);
+		    PRINT '==================================='
+	    END CATCH
+    END
