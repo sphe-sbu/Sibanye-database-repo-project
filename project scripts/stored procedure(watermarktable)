@@ -1,0 +1,16 @@
+IF OBJECT_ID('dbo.UpdateWatermarkTable', 'P') IS NOT NULL 
+DROP PROCEDURE dbo.UpdateWatermarkTable;
+GO
+
+CREATE PROCEDURE UpdateWatermarkTable
+    @lastload VARCHAR(200)
+AS
+BEGIN
+	--- Start the transaction
+	BEGIN TRANSACTION;
+
+	--- Update incremental column in the table
+	UPDATE water_table
+	SET last_load = @lastload
+	COMMIT TRANSACTION;
+	END;
